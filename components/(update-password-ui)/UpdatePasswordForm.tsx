@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import useSignInUser from "@/hooks/useSignInUser";
+import useUpdatePassword from "@/hooks/useUpdatePassword";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,32 +16,32 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import ResendPasswordInstead from "@/components/(login-ui)/ResendPasswordInstead";
 
-const formSchema = z.object({
-  email: z
-    .string()
-    .email("Please provide a valid email address.")
-    .max(320, { message: "Email must be at max 320 characters long." }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long." })
-    .max(256, { message: "Password must be at max 256 characters long." }),
-});
+const formSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters long." })
+      .max(256, { message: "Password must be at max 256 characters long." }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match.",
+    path: ["confirmPassword"],
+  });
 
-function LoginForm() {
-  const { mutate, isPending } = useSignInUser();
+function UpdatePasswordForm() {
+  const { mutate, isPending } = useUpdatePassword();
 
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
-      email: "",
       password: "",
     },
     resolver: zodResolver(formSchema),
   });
 
   function onSubmit(formData: z.infer<typeof formSchema>) {
-    mutate(formData);
+    mutate(formData.password);
   }
 
   return (
@@ -50,27 +50,18 @@ function LoginForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="gap-8 flex flex-col border border-border border-solid rounded-xl p-4 w-72 md:w-96"
       >
-        <h1 className="text-3xl text-center font-bold">
-          Login to your account
-        </h1>
+        {/* Header */}
+        <div className="text-center text-balance space-y-2">
+          <h1 className="text-3xl text-center font-bold">
+            Update your credentials
+          </h1>
+          <p className="text-muted-foreground">
+            Please fill in your new password and keep it safe. You&apos;ll get
+            automatically logged in after submitting.
+          </p>
+        </div>
 
         <div className="space-y-4">
-          {/* Email */}
-          <FormField
-            control={form.control}
-            name="email"
-            disabled={isPending}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="example@mail.co" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {/* Password */}
           <FormField
             control={form.control}
@@ -86,18 +77,31 @@ function LoginForm() {
               </FormItem>
             )}
           />
+
+          {/* Confirm password */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            disabled={isPending}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="********" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Submit */}
         <Button type="submit" isLoading={isPending}>
-          Log in
+          Update password
         </Button>
-
-        {/* Resend password link instead */}
-        <ResendPasswordInstead />
       </form>
     </Form>
   );
 }
 
-export default LoginForm;
+export default UpdatePasswordForm;

@@ -4,4 +4,9 @@ export const SUPABASE_PUBLIC_ANON_KEY =
 
 export const APP_URL = "http://localhost:3000";
 
-export const UNPROTECTED_ROUTES = ["/register", "/login"];
+export const UNPROTECTED_ROUTES = [
+  "/register",
+  "/login",
+  "/resend-password",
+  "/update-password",
+];
